@@ -1,0 +1,1 @@
+*** for the first task, i added a for each loop that loops the creation of density fields and vector forces in the fluid sim
