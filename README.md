@@ -1,5 +1,7 @@
 # Fluid-Sim
  Partial Proyect of fluid sim
+ 
+ Dependencies: Matplotlib, numpy, pyqt5
 
 
 ## Instrucctions: 
