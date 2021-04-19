@@ -1,2 +1,14 @@
 *** for the first task, I added a for each loop that loops the creation of density fields and vector forces in the fluid sim
-    after adding the for loops I implemented a quick console input for the user to add the coordinates for their density locations and the vector forces(and its direction)
+    after adding the for loops I implemented a quick txt input for the user to add the coordinates for their density locations and the vector forces(and its direction)
+
+    the density input is set that the first two numbers define the height and the next 2 numbers define de width
+
+    the velocity input is set that the first two numbers define the x and y coordinates of the origin and the next 2 numbers define the strength and the direction
+
+***To change the color I added the parameter color to both the arrows of the velocity vectors and the density mass
+    this worked for the vector arrows but it wasn't working for the density mass, after researching matplotlib colors I came to the conclusion of using cmaps for the density colors and it worked
+
+*** to add animations to the vector forces, I used the frame number and passed it to a sine and cosine function so that it created a circular and semi circular motion
+
+*** To place an object I intended to use the function declared in the class fluid, but there was no way to add an object from calling it as an object. Instead i added a range inside the method set_boundries and
+    set that range value to 0 which meant that in that range there is an object

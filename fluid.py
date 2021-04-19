@@ -6,7 +6,11 @@ https://github.com/Guilouf/python_realtime_fluidsim
 """
 import numpy as np
 import math
-import ffmpeg
+
+
+
+global objCenter
+global oList
 
 class Fluid:
 
@@ -76,6 +80,8 @@ class Fluid:
         table[self.size - 1, 0] = 0.5 * (table[self.size - 2, 0] + table[self.size - 1, 1])
         table[self.size - 1, self.size - 1] = 0.5 * table[self.size - 2, self.size - 1] + \
                                               table[self.size - 1, self.size - 2]
+        for point in oList:
+            table[int(point[0]):int(point[1]),int(point[2]):int(point[3])] = 0
 
     def diffuse(self, x, x0, diff):
         if diff != 0:
@@ -161,6 +167,7 @@ class Fluid:
         return self.rotx, self.roty
 
 
+
 if __name__ == "__main__":
     try:
         import matplotlib.pyplot as plt
@@ -168,12 +175,88 @@ if __name__ == "__main__":
 
         inst = Fluid()
 
+        dataInput = open('input.txt','r')
+
+
+        densityFlag = False
+        velocityFlag = False
+        objectFlag = False
+
+
+        dList = []
+        vList = []
+        oList = []
+
+        AnimationSet = ""
+        Color_map = ""
+        Color_vector = ""
+        objCenter = "moches"
+        for line in dataInput:
+
+            if "END" in line:
+                densityFlag = False
+                velocityFlag = False
+                objectFlag = False
+
+
+            if densityFlag:
+                dCoord = line.split()
+                dList.append(dCoord)
+
+            if velocityFlag:
+                vCoord = line.split()
+                vList.append(vCoord)
+
+            if objectFlag:
+                oCoord = line.split()
+                oList.append(oCoord)
+
+            if "DENSITY:" in line:
+                densityFlag = True
+
+            if "VECTORS:" in line:
+                velocityFlag = True
+
+            if "OBJECTS:" in line:
+                objectFlag = True
+
+            if "VECTOR_ANIMATION: " in line:
+                tmp = line.replace("VECTOR_ANIMATION: ","")
+                tmp = tmp.rstrip("\n")
+                AnimationSet = tmp
+
+            if "SET_COLOR: " in line:
+                tmp = line.replace("SET_COLOR: ","")
+                tmp = tmp.rstrip("\n")
+                Color_map = tmp
+
         def update_im(i):
             # We add new density creators in here
-            inst.density[30:35, 30:35] += 100  # add density into a 3*3 square
+
+            for coord in dList:
+                inst.density[int(coord[0]):int(coord[1]),int(coord[2]):int(coord[3])] += 100
+
+
+
+            val2 = math.sin(i/20)
+            val3 = math.cos(i/20)
+
+
+            tmp =  1
+            if val2 < 0:
+                tmp = -1
+            else:
+                tmp = 1
             # We add velocity vector values in here
-            inst.velo[20, 20] = [2, 2]
-            inst.step()
+            if AnimationSet == "rotate":
+                for point in vList:
+                    inst.velo[int(point[0]),int(point[1])] = [val2*3,val3*3]
+                    inst.step()
+            elif AnimationSet == "spray":
+                for point in vList:
+                    inst.velo[int(point[0]),int(point[1])] = [val2*3,tmp*val3*3]
+                    inst.step()
+
             im.set_array(inst.density)
             q.set_UVC(inst.velo[:, :, 1], inst.velo[:, :, 0])
             # print(f"Density sum: {inst.density.sum()}")
@@ -182,12 +265,14 @@ if __name__ == "__main__":
         fig = plt.figure()
 
         # plot density
-        im = plt.imshow(inst.density, vmax=100, interpolation='bilinear')
+        im = plt.imshow(inst.density, vmax=100, interpolation='bilinear',cmap=plt.get_cmap(Color_map))
 
         # plot vector field
-        q = plt.quiver(inst.velo[:, :, 1], inst.velo[:, :, 0], scale=10, angles='xy')
-        anim = animation.FuncAnimation(fig, update_im, interval=0)
-        anim.save("movie.gif")
+        q = plt.quiver(inst.velo[:, :, 1], inst.velo[:, :, 0], scale=10, angles='xy',color="red")
+        anim = animation.FuncAnimation(fig, update_im, interval=0,frames=range(0,300))
+        anim.save("movie.gif", writer='PillowWriter',fps=30)
+
+
         plt.show()
 
     except ImportError:
